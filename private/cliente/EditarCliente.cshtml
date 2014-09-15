@@ -1,0 +1,161 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Editar Cliente";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var idCliente = UrlData[0];
+
+    if(idCliente.IsEmpty()) {
+        Response.Redirect("~/private/cliente/CadastroClientes.cshtml");
+    }
+
+    var db = Database.Open("biblioteca");
+    var query = "SELECT * FROM cliente c WHERE c.idCliente = @0";
+    var cliente = db.QuerySingle(query, idCliente);
+
+    var nome = (String) cliente.nome;
+    var cpf =  (String) cliente.cpf;
+    var dtnasc = Convert.ToDateTime(cliente.dtnasc);
+    var email = (String) cliente.email;
+    var endereco = (String) cliente.endereco;
+    var bairro = (String) cliente.bairro;
+    var cidade = (String) cliente.cidade;
+    var uf = (String) cliente.uf;
+
+    if(IsPost) {
+
+        nome = Request["nome"].ToString().Trim().ToUpper();
+        cpf =  Request["cpf"].ToString();
+        dtnasc = Request["dtnasc"].AsDateTime();
+        email = Request["email"].ToString().Trim().ToLower();
+        endereco = Request["endereco"].ToString().Trim().ToUpper();
+        bairro = Request["bairro"].ToString().Trim().ToUpper();
+        cidade = Request["cidade"].ToString().Trim().ToUpper();
+        uf = Request["uf"].ToString().Trim().ToUpper();
+                
+        /* Validando campos */
+        if(nome.IsEmpty()) {
+            ModelState.AddError("error", "O campo Nome é obrigatório.");            
+        }
+
+        if(cpf.IsEmpty()) {
+            ModelState.AddError("error", "O campo CPF é obrigatório.");            
+        } else {
+            var status = true;
+           
+            for(int i = 0; i < cpf.Count(); i++) {
+                if(!"0123456789".Contains(cpf.ElementAt(i))) {
+                    status = false;
+                    break;
+                }
+            }
+
+            if(!status) {
+                ModelState.AddError("error", "O campo CPF deve conter apenas numeros.");
+            }
+        }
+        
+        if(dtnasc.Equals(null)) {
+            ModelState.AddError("error", "O campo Dt. Nascimento é obrigatório.");
+        } 
+
+        if(email.IsEmpty()) {
+            ModelState.AddError("error", "O campo E-mail é obrigatório.");            
+        } else if(!email.Contains(".") || !email.Contains("@") ) {
+            ModelState.AddError("error", "E-mail inválido.");            
+        }
+
+        if(endereco.IsEmpty()) {
+            ModelState.AddError("error", "O campo Endereço é obrigatório.");
+        }
+
+        if(bairro.IsEmpty()) {
+            ModelState.AddError("error", "O campo Bairro é obrigatório.");
+        }
+
+        if(cidade.IsEmpty()) {
+            ModelState.AddError("error", "O campo Cidade é obrigatório.");
+        }
+
+        if(uf.IsEmpty()) {
+            ModelState.AddError("error", "O campo UF é obrigatório.");
+        }
+
+
+        /* Inserindo Novo Usuario */
+        if(ModelState.IsValid) {
+            query = "UPDATE cliente SET nome = @0, cpf = @1, dtnasc = @2, email = @3, endereco = @4, bairro = @5, cidade = @6, uf = @7 "+
+                    "WHERE idCliente = @8";
+            db.Execute(query, nome, cpf, dtnasc, email, endereco, bairro, cidade, uf, idCliente);
+            Response.Redirect("~/private/cliente/CadastroClientes.cshtml");
+        }
+    }
+}
+
+<div id="novo-cliente" class="page-content">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="#" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a; width: 370px;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;">Dados do Cliente</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                 <table>
+                    <tr>
+                        <td><label for="nome" class="rotulo">Nome:</label></td>
+                        <td><input type="text" name="nome" class="campo" maxlength="50" value="@nome"required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="cpf" class="rotulo">CPF:</label></td>
+                        <td><input type="number" name="cpf" class="campo" maxlength="11" value="@cpf" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="dtnasc" class="rotulo">Dt. Nascimento:</label></td>
+                        <td><input type="date" name="dtnasc" class="campo" value="@dtnasc.Date" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="email" class="rotulo">E-mail:</label></td>
+                        <td><input type="email" name="email" class="campo" maxlength="50" value="@email" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="endereco" class="rotulo">Endereço:</label></td>
+                        <td><input type="text" name="endereco" class="campo" maxlength="100" value="@endereco" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="bairro" class="rotulo">Bairro:</label></td>
+                        <td><input type="text" name="bairro" class="campo" maxlength="50" value="@bairro" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="cidade" class="rotulo">Cidade:</label></td>
+                        <td><input type="text" name="cidade" class="campo" maxlength="50" value="@cidade" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="uf" class="rotulo">UF:</label></td>
+                        <td><input type="text" name="uf" class="campo" maxlength="2" value="@uf" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+
+                </table>
+        </fieldset>
+    </form>
+
+</div>

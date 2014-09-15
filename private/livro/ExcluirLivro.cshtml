@@ -1,0 +1,28 @@
+﻿@{
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var idLivro = UrlData[0];
+    var db = Database.Open("biblioteca");
+    var queryQtdExemplares = "SELECT COUNT(acervo.numExemplar) As qtdExemplares FROM acervo WHERE acervo.idLivro = @0";
+    var queryDelete = "DELETE FROM livro WHERE idLivro = @0";
+
+    if(idLivro.IsEmpty()) {
+        Response.Redirect("~/private/livro/CadastroLivros.cshtml");
+    } else {
+        var exemplares = db.QuerySingle(queryQtdExemplares, idLivro);
+        
+        if(Convert.ToInt16(exemplares.qtdExemplares) > 0) {
+            var msgError = "Atenção! Não é possível exluir este registro.\n"+
+                           "Existe(m) "+ exemplares.qtdExemplares +" exemplar(es) deste livro no acervo.";
+            Session.Add("msgError", msgError);
+            Response.Redirect("~/private/error/ErrorPage.cshtml");
+        }
+
+        db.Execute(queryDelete, idLivro);
+
+        Response.Redirect("~/private/livro/CadastroLivros.cshtml");
+    } 
+
+}

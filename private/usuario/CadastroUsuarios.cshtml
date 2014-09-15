@@ -1,0 +1,65 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Cadastro de Usuários";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var query = "SELECT * FROM usuario ORDER BY login";
+    var db = Database.Open("biblioteca");
+    var datas  = db.Query(query);
+
+    var filtro = Request["pesquisa"];
+    var referencia = Request["referencia"];
+    
+    if(filtro != null) {
+        if(filtro.Equals("id")) {
+            query = "SELECT * FROM usuario WHERE id = @0";
+            datas = db.Query(query, referencia.AsInt());
+        } if(filtro.Equals("login")) {
+            query = "SELECT * FROM usuario WHERE login LIKE @0 ORDER BY login";
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        }    
+    }    
+
+    var dataGrid = new WebGrid(source: datas, rowsPerPage: 5);    
+}
+
+<div id="cadastro-usuarios" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div id="pesquisar" style="float: left; margin-top: -20px; margin-bottom: 15px;">
+        <fieldset class="fieldset">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Pesquisar Por</legend>
+                <form action="#" method="post">
+                    <input type="radio" name="pesquisa" value="todos" checked />Todos
+                    <input type="radio" name="pesquisa" value="id"/>Código
+                    <input type="radio" name="pesquisa" value="login"/>Usuário
+                    <input type="text" name="referencia" autofocus="true" />
+                    <input type="submit" name="bntPesquisar" value="Pesquisar"/>
+                </form>
+        </fieldset>
+    </div>
+
+    <ul style="clear: both;">
+        <li class="crud-button" style="margin-left: -30px; float: left; margin-right: 40px;"><a href="~/private/usuario/NovoUsuario.cshtml">Novo Usuário</a></li>
+        <li class="crud-button" style="margin-left: -30px; float: left; margin-right: 40px;"><a href="~/private/usuario/EditarUsuario.cshtml">Editar Usuário</a></li>
+    </ul>
+
+    @{
+        if(datas.Count() > 0) {
+            @dataGrid.GetHtml(tableStyle: "grid", headerStyle: "head", alternatingRowStyle: "alt", 
+                columns: dataGrid.Columns(
+                        dataGrid.Column("id", "Cod. Usuário"),
+                        dataGrid.Column("login", "Nome do Usuário")
+                )
+             )
+        }
+    }
+
+    <div id="qtd-registros">Total de registros encontrados: @datas.Count()</div>
+    <br />
+
+</div>

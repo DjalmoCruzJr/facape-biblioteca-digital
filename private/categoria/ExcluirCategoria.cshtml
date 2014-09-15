@@ -1,0 +1,28 @@
+﻿@{
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var idCategoria = UrlData[0];
+    var db = Database.Open("biblioteca");
+    var queryQtdLivros = "SELECT livro.idLivro FROM livro WHERE livro.idCategoria = @0";
+    var queryDelete = "DELETE FROM categoria WHERE idCategoria = @0";
+
+    if(idCategoria.IsEmpty()) {
+        Response.Redirect("~/private/categoria/CadastroCategorias.cshtml");
+    } else {
+        var qtdLivros = db.Query(queryQtdLivros, idCategoria);
+        
+        if(qtdLivros.Count() > 0) {
+            var msgError = "Atenção! Não é possível exluir este registro.\n"+
+                           "Existe(m) "+ qtdLivros.Count() +" livro(s) cadastrado(s) para esta categoria.";
+            Session.Add("msgError", msgError);
+            Response.Redirect("~/private/error/ErrorPage.cshtml");
+        }
+
+        db.Execute(queryDelete, idCategoria);
+
+        Response.Redirect("~/private/categoria/CadastroCategorias.cshtml");
+    } 
+
+}

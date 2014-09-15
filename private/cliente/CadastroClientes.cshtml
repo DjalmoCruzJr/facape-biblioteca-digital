@@ -1,0 +1,74 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Cadastro de Clientes";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var db = Database.Open("biblioteca");
+    var query = "SELECT * FROM cliente c ORDER BY c.nome";
+    var datas = db.Query(query);
+
+    var filtro = Request["pesquisa"];
+    var referencia = Request["referencia"];
+
+    if(filtro != null) {
+        if(filtro.Equals("id")) {
+            query = "SELECT * FROM cliente WHERE idCliente = @0";
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("nome")) {
+            query = "SELECT * FROM cliente WHERE nome LIKE @0 ORDER BY nome";
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        }    
+    } 
+
+    var dataGrid = new WebGrid(source: datas, rowsPerPage: 5);    
+}
+
+<div id="cadastro-clientes" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div id="pesquisar" style="float: left; margin-top: -20px; margin-bottom: 15px;">
+        <fieldset class="fieldset">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Pesquisar Por</legend>
+                <form action="#" method="post">
+                    <input type="radio" name="pesquisa" value="todos" checked />Todos
+                    <input type="radio" name="pesquisa" value="id"/>Código
+                    <input type="radio" name="pesquisa" value="nome"/>Nome
+                    <input type="text" name="referencia" autofocus="true" />
+                    <input type="submit" name="bntPesquisar" value="Pesquisar"/>
+                </form>
+        </fieldset>
+    </div>
+
+    <ul style="clear: both;">
+        <li class="crud-button" style="margin-left: -30px; width: 8%;"><a href="~/private/cliente/NovoCliente.cshtml">Novo Cliente</a></li>
+    </ul>
+
+    @{
+        if(datas.Count() > 0) {
+            @dataGrid.GetHtml(tableStyle: "grid", headerStyle: "head", alternatingRowStyle: "alt", 
+                columns: dataGrid.Columns(
+                    dataGrid.Column("idCliente", "Cod. Cliente"),
+                    dataGrid.Column("nome", "Nome"),
+                    dataGrid.Column("cpf", "CPF"),
+                    dataGrid.Column("dtnasc", "Dt. Nascimento"),
+                    dataGrid.Column("email", "E-mail", format: @<text><a href="mailto:@item.email" >@item.email</a></text>),
+                    dataGrid.Column("endereco", "Endereço"),
+                    dataGrid.Column("bairro", "Bairro"),
+                    dataGrid.Column("cidade", "Cidade"),
+                    dataGrid.Column("uf", "UF"),
+                    dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/cliente/EditarCliente/@item.idCliente"  class="crud-button">Editar</a></span></text>),
+                    dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/cliente/ExcluirCliente/@item.idCliente"  class="crud-button">Excluir</a></span></text>)
+                )
+            )
+        }
+
+    }    
+
+    <div id="qtd-registros">Total de Registros Encontrados: @datas.Count()</div>
+    <br />
+
+</div>

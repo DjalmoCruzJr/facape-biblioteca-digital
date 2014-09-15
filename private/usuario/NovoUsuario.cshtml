@@ -1,0 +1,85 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Novo Usuário";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    if(IsPost) {
+        var login = Request["login"].ToString().ToUpper().Trim();
+        var novaSenha1 = Request["novaSenha1"].ToString().Trim();
+        var novaSenha2 = Request["novaSenha2"].ToString().Trim();
+                
+        /* Validando campos */
+        if(login.IsEmpty()) {
+            ModelState.AddError("error", "O campo Login é obrigatório.");            
+        } else if(WebSecurity.UserExists(login)) {
+            ModelState.AddError("error", "O login informado já está sendo usado.");
+        }
+
+        if(novaSenha1.IsEmpty()) {
+            ModelState.AddError("error", "O campo Senha é obrigatório.");            
+        } else if(novaSenha1.Contains("-")) {
+            ModelState.AddError("error", "A senha não pode conter espaços em branco.");            
+        }
+
+        if(novaSenha2.IsEmpty()) {
+            ModelState.AddError("error", "O campo Confirmar Senha é obrigatório.");            
+        }
+
+        if(!novaSenha1.Equals(novaSenha2)) {
+            ModelState.AddError("error", "As senha informadas são diferentes.");            
+        }
+
+
+        /* Inserindo Novo Usuario */
+        if(ModelState.IsValid) {
+            WebSecurity.CreateUserAndAccount(login, novaSenha1);
+            ModelState.AddError("sucess", "Registro inserido com sucesso.");     
+        }           
+    }
+}
+
+<div id="novo-cliente">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="~/private/usuario/NovoUsuario.cshtml" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a; width: 400px;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Dados do Usuário</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                <table>
+                    <tr>
+                        <td><label for="login" class="rotulo">Login:</label></td>
+                        <td><input type="text" name="login" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                     <tr>
+                        <td><label for="novaSenha1" class="rotulo">Senha:</label></td>
+                        <td><input id="novaSenha1" type="password" name="novaSenha1" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                     <tr>
+                        <td style="width:"><label for="novaSenha2" class="rotulo">Confirmar Senha:</label></td>
+                        <td><input id="novaSenha2" type="password" name="novaSenha2" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+
+                </table>
+        </fieldset>
+    </form>
+
+    <div style="color: #0026ff; font-size: 20px; font-family: Verdana, Arial, serif; margin: 30px 0 0 40px;">
+            @Html.ValidationMessage("sucess")
+    </div>
+</div>

@@ -1,0 +1,146 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Editar livro";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var idLivro = UrlData[0];
+
+    if(idLivro.IsEmpty()) {
+        Response.Redirect("~/private/livro/CadastroLivros.cshtml");
+    }
+
+    var db = Database.Open("biblioteca");
+    var query = "SELECT * FROM livro WHERE idLivro = @0";
+    var livro = db.QuerySingle(query, idLivro);
+
+    var qtdExemplares = db.QuerySingle("SELECT COUNT(numExemplar) AS qtdExemplares FROM acervo WHERE idLivro = @0", idLivro).qtdExemplares;
+
+    var categorias = db.Query("SELECT * FROM categoria ORDER BY categoria.nome");
+
+    var titulo = (String) livro.titulo;
+    var idCategoria = Convert.ToInt16(livro.idCategoria);
+    var autor = (String) livro.autor;
+    var isbn = (String) livro.isbn;
+    var qtdExemplaresAtual = qtdExemplares;
+
+    if(IsPost) {
+        titulo = Request["titulo"].ToString().ToUpper();
+        idCategoria = Request["categoria"].AsInt();
+        autor = Request["autor"].ToString().ToUpper();
+        isbn =  Request["isbn"].ToString();
+        qtdExemplares = Request["qtdExemplares"].AsInt();
+                
+        /* Validando campos */
+        if(String.IsNullOrEmpty(titulo)) {
+            ModelState.AddError("error", "O campo Título é obrigatório.");            
+        }
+                
+        if(idCategoria == null || idCategoria == 0) {
+            ModelState.AddError("error", "O campo Cateogria é obrigatório.");            
+        }
+
+        if(String.IsNullOrEmpty(autor)) {
+            ModelState.AddError("error", "O campo Autor é obrigatório.");            
+        } 
+
+        if(String.IsNullOrEmpty(isbn)) {
+            ModelState.AddError("error", "O campo ISBN é obrigatório.");            
+        } else {
+            var status = true;
+           
+            for(int i = 0; i < isbn.Count(); i++) {
+                if(!"0123456789".Contains(isbn.ElementAt(i).ToString())) {
+                    status = false;
+                    break;
+                }
+            }
+
+            if(!status) {
+                ModelState.AddError("error", "O campo ISBN deve conter apenas numeros.");
+            }
+        }
+
+        if(qtdExemplares < qtdExemplaresAtual){
+            ModelState.AddError("error", "A qtd. de exemplares deve ser maior ou igual ao valor atual (Qtd. atual = "+qtdExemplaresAtual+").");
+        }
+
+
+        /* Atualizando Livro */
+        if(ModelState.IsValid) {
+            query = "UPDATE livro SET titulo = @0, idCategoria = @1, autor = @2, isbn = @3 WHERE idLivro = @4";
+            db.Execute(query, titulo, idCategoria, autor, isbn, idLivro);
+            
+            query = "INSERT INTO acervo (idLivro) VALUES (@0)";
+            for(var i = 0; i < qtdExemplares - qtdExemplaresAtual; i++) {
+                db.Execute(query, idLivro);
+            }
+
+            Response.Redirect("~/private/livro/CadastroLivros.cshtml");
+        }
+    }
+}
+
+<div id="novo-livro" class="page-content">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="#" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a; width: 400px;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;">Dados do Livro</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                <table>
+                    <tr>
+                        <td><label for="titulo" class="rotulo">Título:</label></td>
+                        <td><input type="text" name="titulo" class="campo" maxlength="100" required value="@titulo" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><label for="titulo" class="rotulo">Categoria:</label></td>
+                        <td>
+                            <select name="categoria" class="campo"  required>                            
+                                <option value="0">Selecione uma categoria</option>
+                                @foreach(var c in categorias)
+                                {
+                                    if(c.idCategoria == idCategoria) {
+                                        <option value="@c.idCategoria" selected>@c.nome</option>
+                                    }
+
+                                    <option value="@c.idCategoria">@c.nome</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="autor" class="rotulo">Autor:</label></td>
+                        <td><input type="text" name="autor" class="campo" maxlength="50" required value="@autor" /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="isbn" class="rotulo">ISBN:</label></td>
+                        <td><input type="number" name="isbn" class="campo" maxlength="13" required value="@isbn" /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="qtdExemplares" class="rotulo">Qtd. Exemplares:</label></td>
+                        <td><input type="number" name="qtdExemplares" class="campo" value="@qtdExemplares" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+
+                </table>
+        </fieldset>
+    </form>
+
+</div>

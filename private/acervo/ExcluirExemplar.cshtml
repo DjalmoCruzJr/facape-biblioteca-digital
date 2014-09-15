@@ -1,0 +1,38 @@
+﻿@{
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var numExemplar = UrlData[0];
+    var db = Database.Open("biblioteca");
+    var queryReserva = "SELECT reserva.idReserva FROM reserva WHERE reserva.numExemplar = @0";
+    var queryEmpresrtimo = "SELECT emprestimo.idEmprestimo FROM emprestimo WHERE emprestimo.numExemplar = @0";
+    var queryDelete = "DELETE FROM acervo WHERE numExemplar = @0";
+
+    if(numExemplar.IsEmpty()) {
+        Response.Redirect("~/private/acervo/Acervo.cshtml");
+    } else {
+        var reserva = db.QuerySingle(queryReserva, numExemplar);
+        
+        if(reserva != null) {
+            var msgError = "Atenção! Não é possível exluir este registro.\n"+
+                           "Este exemplar está vinculado a reserva nº "+ reserva.idReserva;
+            Session.Add("msgError", msgError);
+            Response.Redirect("~/private/error/ErrorPage.cshtml");
+        }
+
+        var emprestimo = db.QuerySingle(queryEmpresrtimo, numExemplar);
+        
+        if(emprestimo != null) {
+            var msgError = "Atenção! Não é possível exluir este registro.\n"+
+                           "Este exemplar está vinculado ao emprestimo nº "+ emprestimo.idEmprestimo;
+            Session.Add("msgError", msgError);
+            Response.Redirect("~/private/error/ErrorPage.cshtml");
+        }
+
+        db.Execute(queryDelete, numExemplar);
+
+        Response.Redirect("~/private/acervo/Acervo.cshtml");
+    } 
+
+}

@@ -1,0 +1,70 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Editar Categoria";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var idCategoria = UrlData[0].AsInt();
+
+    var db = Database.Open("biblioteca");
+    var query = "SELECT nome FROM categoria WHERE idCategoria = @0";
+    var categoria = db.QuerySingle(query, idCategoria);
+
+    var nomeCategoria = (String) categoria.nome;
+
+    if(IsPost) {
+        nomeCategoria = Request["nomeCategoria"].ToString().Trim().ToUpper();
+                
+        /* Validando campos */
+        if(nomeCategoria.IsEmpty()) {
+            ModelState.AddError("error", "O campo Nome da Categoria é obrigatório.");            
+        }
+
+        /* Inserindo Novo Livro */
+        if(ModelState.IsValid) {
+            db = Database.Open("biblioteca");
+            query = "UPDATE categoria SET nome = @0 WHERE idcategoria = @1";
+
+            if(db.Execute(query, nomeCategoria, idCategoria) == 1) {
+                Response.Redirect("~/private/categoria/CadastroCategorias.cshtml");
+            }
+        }
+
+    }
+
+}
+
+<div id="editar-categoria" class="page-content">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="#" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a; width: 400px;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;">Dados da categoria</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                <table>
+                    <tr>
+                        <td><label for="nomeCategoria" class="rotulo">Nome da Categoria:</label></td>
+                        <td><input type="text" name="nomeCategoria" class="campo" maxlength="50" value="@nomeCategoria" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+
+                </table>
+        </fieldset>
+    </form>
+
+    <div style="color: #0026ff; font-size: 20px; font-family: Verdana, Arial, serif; margin: 30px 0 0 40px;">
+            @Html.ValidationMessage("sucess")
+    </div>
+</div>

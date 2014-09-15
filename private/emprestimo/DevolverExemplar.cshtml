@@ -1,0 +1,15 @@
+﻿@{
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var idEmprestimo = UrlData[0];
+    var dtDevolucao = DateTime.Now.Date;
+    var query = "UPDATE emprestimo SET dtDevolucao = @0 WHERE idEmprestimo = @1";
+    var db = Database.Open("biblioteca");
+
+    db.Execute(query, dtDevolucao, idEmprestimo);
+
+    Response.Redirect("~/private/emprestimo/Emprestimos.cshtml");
+
+}

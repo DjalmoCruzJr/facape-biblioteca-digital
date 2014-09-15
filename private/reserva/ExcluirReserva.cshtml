@@ -1,0 +1,17 @@
+﻿@{
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+        
+    var idReserva = UrlData[0];
+
+    if(idReserva.IsEmpty()) {
+        Response.Redirect("~/private/reserva/Reservas.cshtml");
+    }
+
+    var db = Database.Open("biblioteca");
+    var queryDelete = "DELETE FROM reserva WHERE idReserva = @0";
+    db.Execute(queryDelete, idReserva);
+    Response.Redirect("~/private/reserva/Reservas.cshtml");
+    
+}

@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Erro";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+}
+
+<div id="error-page" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div style="color: #f00; font-family: Verdana, Arial, serif; font-size: 20px; text-align: left;">
+        @Session["msgError"].ToString()
+    </div>    
+</div>

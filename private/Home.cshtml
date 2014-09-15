@@ -1,0 +1,14 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Home";     
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+}
+
+<div id="home" class="page-content">
+
+    <div id="background"><img src="~/images/logo.png" alt="Background image." /></div>
+
+</div>

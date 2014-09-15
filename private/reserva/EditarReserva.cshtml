@@ -1,0 +1,123 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Editar Reserva";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var idReserva = UrlData[0].AsInt();
+    if(idReserva == null) {
+        Response.Redirect("~/private/reseva/Reserva.cshtml");
+    }
+
+    var db = Database.Open("biblioteca");
+    var query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                "FROM reserva "+
+                "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                "WHERE reserva.idReserva = @0";
+    var reserva = db.QuerySingle(query, idReserva);    
+
+    var numExemplar = (int) reserva.numExemplar;
+    var tituloExemplar = (String) reserva.titulo;
+    var dtReserva = (DateTime) reserva.dtReserva;
+    var idCliente = (int) reserva.idCliente;
+    var nomeCliente = (String) reserva.nome;
+
+    if(IsPost) {
+        dtReserva = Request["dtReserva"].AsDateTime();    
+                
+        /* Validando campos */
+        if(dtReserva == null) {
+            ModelState.AddError("error", "O campo Dt.Reserva é obrigatório.");            
+        } else if(dtReserva.Date < DateTime.Now.Date){
+            ModelState.AddError("error", "A data da reserva deve ser maior que a data atual.");            
+        } else {
+            db = Database.Open("biblioteca");
+            query = "SELECT * FROM emprestimo WHERE numExemplar = @0";
+            var emprestimo = db.QuerySingle(query, numExemplar);
+            
+            if(emprestimo != null) {               
+               if(dtReserva < emprestimo.dtEntrega) {
+                    var msg = "Este exemplar está empretado com devolução prevista para "+emprestimo.dtEntrega+"."+
+                              "A data de reserva deve ser maior ou igual a data de devolução do exemplar.";
+                    ModelState.AddError("error", msg);    
+                }        
+            }
+
+            db = Database.Open("biblioteca");
+            query = "SELECT * FROM reserva WHERE numExemplar = @0 AND dtreserva = @1";
+            var reservas = db.Query(query, numExemplar, dtReserva);
+            
+            if(reservas.Count() > 0) {
+                ModelState.AddError("error", "Já existe uma reserva deste exemplar na data selecionada.");            
+            }    
+        }
+               
+        /* Editando Reserva */
+        if(ModelState.IsValid) {
+            db = Database.Open("biblioteca");
+            query = "UPDATE reserva SET reserva.dtreserva = @0 WHERE reserva.idReserva = @1";
+
+            if(db.Execute(query, dtReserva, idReserva) == 1) {
+                ModelState.AddError("sucess", "Registro inserido com sucesso.");
+            }
+        }    
+    }
+    
+}
+
+<div id="novo-cliente" class="page-content">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="#" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a; width: 400px;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;">Dados da Reserva</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                <table>
+                    <tr>
+                        <td><label for="nome" class="rotulo">Nº Exemplar:</label></td>
+                        <td><input type="number" name="numExemplar" class="campo" disabled value="@numExemplar" /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="tituloExemplar" class="rotulo">Título do Exemplar:</label></td>
+                        <td><input type="text" name="tituloExemplar" class="campo" disabled value="@tituloExemplar" /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="idCliente" class="rotulo">Cod. Cliente:</label></td>
+                        <td><input type="number" name="idCliente" class="campo" value="@idCliente" required disabled /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="nomeCliente" class="rotulo">Nome do Cliente:</label></td>
+                        <td><input type="text" name="nomeCliente" class="campo" value="@nomeCliente" required disabled /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="dtReserva" class="rotulo">Dt. Reserva:</label></td>
+                        <td><input type="date" name="dtReserva" class="campo" required autofocus="true" value="@dtReserva.Date" /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+
+                </table>
+        </fieldset>
+    </form>
+
+    <div style="color: #0026ff; font-size: 20px; font-family: Verdana, Arial, serif; margin: 30px 0 0 40px;">
+            @Html.ValidationMessage("sucess")
+    </div>
+</div>

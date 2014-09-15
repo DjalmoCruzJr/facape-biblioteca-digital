@@ -1,0 +1,101 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Editar Usuário";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var novoLogin = WebSecurity.CurrentUserName;
+
+    if(IsPost) {
+        novoLogin = Request["novoLogin"].ToUpper().Trim();
+        var senhaAtual = Request["senhaAtual"].ToString().Trim();
+        var novaSenha1 = Request["novaSenha1"].ToString().Trim();
+        var novaSenha2 = Request["novaSenha2"];
+                
+        /* Validando campos */
+        if (novoLogin.IsEmpty()) {
+            ModelState.AddError("error", "A campo Novo Usuário deve ser informada.");
+        } else if(WebSecurity.UserExists(novoLogin) && !novoLogin.Equals(WebSecurity.CurrentUserName)) {
+            ModelState.AddError("error", "O login informado já está sendo usado.");
+        }
+
+       if (senhaAtual.IsEmpty()) {
+            ModelState.AddError("error", "A senha atual deve ser informada.");
+        }
+
+        if(novaSenha1.IsEmpty()) {
+            ModelState.AddError("error", "O campo Nova Senha é obrigatório.");            
+        }
+
+        if(novaSenha2.IsEmpty()) {
+            ModelState.AddError("error", "O campo Confirmar Senha é obrigatório.");            
+        }
+
+        if(!novaSenha1.Equals(novaSenha2)) {
+            ModelState.AddError("error", "As senha informadas são diferentes.");            
+        }
+
+        /* Editando Usuário*/
+        if(ModelState.IsValid) {
+            var db = Database.Open("biblioteca");
+            var query = "UPDATE usuario SET login = @0 WHERE id = @1";
+            
+            if(WebSecurity.ChangePassword(WebSecurity.CurrentUserName, senhaAtual, novaSenha1)) {
+                db.Execute(query, novoLogin, WebSecurity.CurrentUserId);
+
+                WebSecurity.Logout();
+                Response.Redirect("~/");
+            } else {
+                ModelState.AddError("error", "A senha atual não confere.");
+            }
+        }    
+
+    }
+}
+
+<div id="novo-cliente">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="~/private/usuario/EditarUsuario.cshtml" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold; width: 400px;"  >Dados do Usuário</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                <table>
+                    <tr>
+                        <td><label for="novoLogin" class="rotulo">Novo Usuário:</label></td>
+                        <td><input id="novoLogin" type="text" name="novoLogin" value="@novoLogin" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="senhaAtual" class="rotulo">Senha Atual:</label></td>
+                        <td><input id="senhaAtual" type="password" name="senhaAtual" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="novaSenha1" class="rotulo">Nova Senha:</label></td>
+                        <td><input id="novaSenha1" type="password" name="novaSenha1" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                     <tr>
+                        <td style="width:"><label for="novaSenha2" class="rotulo">Confirmar Senha:</label></td>
+                        <td><input id="novaSenha2" type="password" name="novaSenha2" class="campo" maxlength="20" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+                </table>
+        </fieldset>
+
+    </form>
+
+</div>

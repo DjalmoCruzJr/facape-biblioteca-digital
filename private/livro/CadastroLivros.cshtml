@@ -1,0 +1,83 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Cadastro de Livros";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var query = "SELECT livro.idLivro, livro.titulo, categoria.nome, livro.autor, livro.isbn "+
+                "FROM livro "+
+                "INNER JOIN categoria ON livro.idCategoria = categoria.idCategoria "+
+                "ORDER BY livro.titulo";    
+    var db = Database.Open("biblioteca");
+    var datas = db.Query(query);
+
+    var filtro = Request["pesquisa"];
+    var referencia = Request["referencia"];
+
+    if(filtro != null) {
+        if(filtro.Equals("id")) {
+            query = "SELECT livro.idLivro, livro.titulo, categoria.nome, livro.autor, livro.isbn "+
+                    "FROM livro "+
+                    "INNER JOIN categoria ON livro.idCategoria = categoria.idCategoria "+
+                    "WHERE livro.idLivro = @0 "+
+                    "ORDER BY livro.titulo"; 
+                    datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("titulo")) {
+            query = "SELECT livro.idLivro, livro.titulo, categoria.nome, livro.autor, livro.isbn "+
+                    "FROM livro "+
+                    "INNER JOIN categoria ON livro.idCategoria = categoria.idCategoria "+
+                    "WHERE livro.titulo LIKE @0 "+
+                    "ORDER BY livro.titulo"; 
+                    datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        } else if(filtro.Equals("categoria")) {
+            query = "SELECT livro.idLivro, livro.titulo, categoria.nome, livro.autor, livro.isbn "+
+                    "FROM livro "+
+                    "INNER JOIN categoria ON livro.idCategoria = categoria.idCategoria "+
+                    "WHERE categoria.nome LIKE @0 "+
+                    "ORDER BY livro.titulo"; 
+                    datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        }    
+    }
+
+    var dataGrid = new WebGrid(source: datas, rowsPerPage: 5);
+}
+
+<div id="cadastro-livros" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div id="pesquisar" style="float: left; margin-top: -20px; margin-bottom: 15px;">
+        <fieldset class="fieldset">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Pesquisar Por</legend>
+                <form action="#" method="post">
+                    <input type="radio" name="pesquisa" value="todos" checked />Todos
+                    <input type="radio" name="pesquisa" value="id"/>Código
+                    <input type="radio" name="pesquisa" value="titulo"/>Título
+                    <input type="radio" name="pesquisa" value="categoria"/>Categoria
+                    <input type="text" name="referencia" autofocus="true" />
+                    <input type="submit" name="bntPesquisar" value="Pesquisar"/>
+                </form>
+        </fieldset>
+    </div>
+
+    <ul style="clear: both;">
+        <li class="crud-button" style="margin-left: -30px; float: left; margin-right: 40px;"><a href="~/private/livro/NovoLivro.cshtml">Novo Livro</a></li>
+    </ul>
+
+    @dataGrid.GetHtml(tableStyle: "grid", headerStyle: "head", alternatingRowStyle: "alt", 
+            columns: dataGrid.Columns(
+                    dataGrid.Column("idLivro", "Cod. Livro"),
+                    dataGrid.Column("titulo", "Título"),
+                    dataGrid.Column("nome", "Categoria"),
+                    dataGrid.Column("autor", "Autor"),
+                    dataGrid.Column("isbn", "ISBN"),
+                    dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/livro/EditarLivro/@item.idLivro"  class="crud-button">Editar</a></span></text>),                                                                                                 dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/livro/ExcluirLivro/@item.idLivro"  class="crud-button">Excluir</a></span></text>)
+            )
+    )
+
+    <div id="qtd-registros">Total de Registros Encontrados: @datas.Count()</div>
+    <br />
+
+</div>

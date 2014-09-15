@@ -1,0 +1,289 @@
+/* _Layout.cshtml*/
+
+#header {
+    background-color: #322a2a;
+    padding: 5px 40px;
+    font-family: Verdana, Arial, serif;
+    font-size: 24px;
+    box-shadow: 0 0 15px #322a2a;
+}
+
+#header a{
+    color: #fff;  
+}
+
+#header img {
+    margin-top: 5px;
+    margin-right: 5px;
+    float: left;
+    width: 55px; height: 55px;   
+    border-radius: 10px 10px 10px;
+    box-shadow: 0 0 15px #fff;
+}
+
+#footer {
+    text-align: center;
+    font-family: Verdana, Arial, serif;
+    font-size: 18px;
+    color: #322a2a;
+}
+
+#footer hr {
+    border: 1px #fff solsid;
+    box-shadow: 0 0 5px #322a2a;
+}
+
+#footer a {
+    text-decoration: none;
+}
+
+
+/* _LayoutPadrao.cshtml*/
+
+#current-page {
+    float: left;
+    font-family: Verdana, Arial, serif;
+    font-size: 10px;
+}
+
+#current-user {
+    float: right;  
+    margin-bottom: 5px;                 
+}
+
+body hr {
+    clear: both;
+}
+
+#menu {
+    margin: -3px 0 10px 0;
+    font-family: Verdana, Arial, serif;
+    font-weight: bold;
+}
+
+#menu .menu-item {
+    float: left;
+    margin-right: 15px;  
+    list-style-type: none;
+    border: 2px outset #6e6464; 
+}
+
+#menu li {   
+    padding: 2px 6px 0 2px;
+    background-color: #322a2a;
+    border-radius: 2px 2px 2px;
+}
+
+#menu ul a {
+    text-decoration: none;   
+    color: #fff; 
+}
+
+#menu ul a:hover {
+    text-decoration: underline;
+    box-shadow: 0 0 40px #fff;
+    background-color: #6e6464;
+}
+
+
+/* Login.cshtml */
+
+#login {
+    width: 350px;
+    margin: 0 auto;    
+}
+
+#login table {
+    width: 100%;
+}
+
+#login form {
+    margin: 100px 0 100px 0;
+}
+
+#login fieldset {
+    padding: 20px 20px;
+}
+
+
+#login input[type=submit]{
+    float: right;
+    width: 60px;
+}
+
+#login input[type=text]{
+    width: 100%;
+}
+
+#login input[type=password]{
+    width: 100%;
+}
+
+
+/* Home.cshtml */
+
+#home {
+    font-family: Verdana, Arial, serif;
+    font-size: 20px;
+}
+
+#home #background {
+    margin: 50px auto 0 auto;
+    width: 360px;
+    height: 360px;
+}
+
+#home img {
+    width: 280px;
+    height: 280px;
+    border-radius: 5px 5px 5px;
+}
+
+
+/* CadastroCliente.cshtml */
+
+#cadastro-clientes {
+    padding: 10px 60px;
+}
+
+#cadastro-clientes h1 {
+    margin-bottom: 55px;
+    color: #322a2a;
+    font-family: Verdana, Arial, serif;
+    font-style: oblique;
+}
+
+.grid { 
+    clear: both;    
+    margin: 4px; 
+    border-collapse: collapse;
+    border: 1px #fff solsid; 
+    box-shadow: 0 0 5px #322a2a;
+} 
+
+.head { 
+    background-color: #322a2a; 
+    font-weight: bold; 
+    color: #FFF; 
+} 
+
+.head a { 
+    text-decoration: none;
+    color: #e7d9d9;
+} 
+
+.grid th, .grid td {
+    border: 1px solid #C0C0C0; 
+    padding: 5px; 
+} 
+
+.alt { 
+    background-color: #E8E8E8; 
+    color: #000;
+} 
+
+
+/* CadastroUsuarios.cshtml */
+
+#cadastro-usuarios {
+    padding: 10px 60px;
+}
+
+#cadastro-usuarios h1 {
+    margin-bottom: 55px;
+    color: #322a2a;
+    font-family: Verdana, Arial, serif;
+    font-style: oblique;
+}
+
+
+/* NovoCliente.cshtml */
+
+#novo-cliente {
+    margin: 30px 50px;
+}
+
+#novo-cliente fieldset {
+    width: 340px;
+    padding: 20px 40px;
+}
+
+.rotulo {
+    margin-right: 15px;
+}
+
+.campo {
+    width: 240px;
+}
+
+.botao {
+    float: right;
+    margin-left: 20px;
+    width: 80px;
+}
+
+.crud-button {
+    list-style-type: none;
+    background-color: #322a2a;
+    border-radius: 2px 2px 2px;
+    margin-bottom: 15px;
+    padding: 2px 0;
+    border: 2px outset #6e6464;
+}
+
+.crud-button a {
+    text-decoration: none;   
+    color: #e7d9d9;
+    font-weight: bold;
+}
+
+.crud-button a:hover {
+    text-decoration: underline;
+    box-shadow: 0 0 40px #fff;
+    background-color: #6e6464;
+}
+
+#qtd-registros {
+    margin-left: 5px;
+    margin-top: 10px;
+    font-family: Verdana, Arial, serif;
+    font-weight: bold;
+    font-size: 12px;
+    color: #0026ff;
+}
+
+.page-title {
+    margin-bottom: 55px;
+    color: #322a2a;
+    font-family: Verdana, Arial, serif;
+    font-style: oblique;
+}
+
+/* Acervo.cshtml */
+#acervo {
+    padding: 10px 60px;
+}
+
+
+/* ErroExcluirCliente.cshtml */
+#erro-excluir-cliente {
+    padding: 10px 60px;
+}
+
+
+#erro-excluir-livro {
+    padding: 10px 60px;
+}
+
+#erro-excluir-categoria {
+    padding: 10px 60px;
+}
+
+.page-content {
+    padding: 10px 60px;
+}
+
+.fieldset {
+    border: 1px #fff solsid; 
+    box-shadow: 0 0 5px #322a2a;
+}

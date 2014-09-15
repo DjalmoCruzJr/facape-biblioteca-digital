@@ -1,0 +1,67 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Cadastro de Categorias";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var db = Database.Open("biblioteca");
+    var query = "SELECT * FROM categoria ORDER BY categoria.nome";
+    var datas = db.Query(query);
+
+    var filtro = Request["pesquisa"];
+    var referencia = Request["referencia"];
+
+    if(filtro != null) {
+        if(filtro.Equals("id")) {
+            query = "SELECT * FROM categoria WHERE idCategoria = @0";
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("nome")) {
+            query = "SELECT * FROM categoria WHERE nome LIKE @0 ORDER BY nome";
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        }    
+    } 
+
+    var dataGrid = new WebGrid(source: datas, rowsPerPage: 5);    
+}
+
+<div id="cadastro-clientes" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div id="pesquisar" style="float: left; margin-top: -20px; margin-bottom: 15px;">
+        <fieldset class="fieldset">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Pesquisar Por</legend>
+                <form action="#" method="post">
+                    <input type="radio" name="pesquisa" value="todos" checked />Todos
+                    <input type="radio" name="pesquisa" value="id"/>Código
+                    <input type="radio" name="pesquisa" value="nome"/>Nome
+                    <input type="text" name="referencia" autofocus="true" />
+                    <input type="submit" name="bntPesquisar" value="Pesquisar"/>
+                </form>
+        </fieldset>
+    </div>
+
+    <ul style="clear: both;">
+        <li class="crud-button" style="margin-left: -30px; width: 10%;"><a href="~/private/categoria/NovaCategoria.cshtml">Nova Categoria</a></li>
+    </ul>
+
+    @{
+        if(datas.Count() > 0) {
+            @dataGrid.GetHtml(tableStyle: "grid", headerStyle: "head", alternatingRowStyle: "alt", 
+                columns: dataGrid.Columns(
+                    dataGrid.Column("idCategoria", "Cod. Categoria"),
+                    dataGrid.Column("nome", "Nome da Categoria"),
+                    dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/categoria/EditarCategoria/@item.idCategoria"  class="crud-button">Editar</a></span></text>),
+                    dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/categoria/ExcluirCategoria/@item.idCategoria"  class="crud-button">Excluir</a></span></text>)
+                )
+            )
+        }
+
+    }    
+
+    <div id="qtd-registros">Total de Registros Encontrados: @datas.Count()</div>
+    <br />
+
+</div>

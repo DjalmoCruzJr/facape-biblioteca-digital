@@ -1,0 +1,54 @@
+﻿@{
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }   
+}
+
+<!DOCTYPE html>
+
+<html lang="pt-br">
+    
+    <head>
+        <meta charset="utf-8" />
+        <title>Biblioteca Digital | @Page.Title</title>
+        <link rel="icon" href="~/images/favicon.ico" type="image/x-icon">
+        <link rel="stylesheet" type="text/css" href="@Href("~/resources/sistema.css")" />
+        <script type="text/javascript" src="~/resources/sistema.js"></script>  
+        @RenderSection("head", required: false)
+    </head>
+
+    <body>
+
+        <div id="header">
+            <a href="@Href("~/")">
+                <img src="~/images/logo.png" alt="Logo biblioteca digital" />
+                <p>Biblioteca Digital</p>
+            </a>
+        </div>
+        
+        <hr style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a" class="separator" />
+
+        <div id="current-user">
+            Bem vindo(a), <span style="color: #0026ff; font-weight: bold;"> @WebSecurity.CurrentUserName.ToUpper().</span> | <span class="crud-button" style="font-weight: bold;"><a href="~/login/Logout.cshtml">Logout</a></span>
+        </div>        
+
+        <hr style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a" class="separator" />
+
+        <div id="menu">
+            @RenderPage("~/private/layout/menu.cshtml")
+        </div>
+
+        <hr style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a" class="separator" />
+
+        <div id="content">
+            @RenderBody()
+        </div>
+        
+        <div id="footer">
+            <hr />
+            &copy; @DateTime.Now.Year JACLAD Sistemas | Tecnologias Web - <a href="http://www.facape.br" target="
+           ">FACAPE</a>
+        </div>
+        
+    </body>
+</html>

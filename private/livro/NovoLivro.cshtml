@@ -1,0 +1,146 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Novo Livro";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var query = "SELECT * FROM categoria ORDER BY nome";
+    var db = Database.Open("biblioteca");
+
+    var categorias = db.Query(query);
+
+    var status = true;
+
+    if(IsPost) {
+        var titulo = Request["titulo"].ToString().Trim().ToUpper();
+        var idCategoria = Request["categoria"].AsInt();
+        var autor =  Request["autor"].ToString().Trim().ToUpper();
+        var isbn =  Request["isbn"].ToString();
+        var qtdexemplares =  Request["qtdexemplares"].ToString().Trim();
+                
+        /* Validando campos */
+        if(titulo.IsEmpty()) {
+            ModelState.AddError("error", "O campo Título é obrigatório.");            
+        }
+
+        if(idCategoria == null || idCategoria == 0) {
+            ModelState.AddError("error", "O campo Cateogria é obrigatório.");            
+        }
+
+        if(autor.IsEmpty()) {
+            ModelState.AddError("error", "O campo Autor é obrigatório.");            
+        } 
+
+        if(isbn.IsEmpty()) {
+            ModelState.AddError("error", "O campo ISBN é obrigatório.");            
+        } else {
+            status = true;
+           
+            for(int i = 0; i < isbn.Count(); i++) {
+                if(!"0123456789".Contains(isbn.ElementAt(i))) {
+                    status = false;
+                    break;
+                }
+            }
+
+            if(!status) {
+                ModelState.AddError("error", "O campo ISBN deve conter apenas numeros.");
+            }
+        }
+
+        if(qtdexemplares.IsEmpty()) {
+            ModelState.AddError("error", "O campo Qtd. Exemplares é obrigatório.");            
+        } else {
+
+            status = true;           
+            for(int i = 0; i < qtdexemplares.Count(); i++) {
+                if(!"0123456789".Contains(qtdexemplares.ElementAt(i))) {
+                    status = false;
+                        break;
+                }
+            }
+            if(!status) {
+                ModelState.AddError("error", "O campo Qtd. Exemplares deve conter apenas numeros.");
+            }
+        }
+        
+
+        /* Inserindo Novo Livro */
+        if(ModelState.IsValid) {            
+            db = Database.Open("biblioteca");
+            query = "INSERT INTO livro (titulo, autor, isbn, idCategoria) VALUES (@0, @1, @2, @3)";
+            db.Execute(query, titulo, autor, isbn, idCategoria);
+            
+            var idNovoLivro = db.GetLastInsertId();
+            query = "INSERT INTO acervo (idLivro) VALUES (@0)";
+            for(var i = 0; i < qtdexemplares.AsInt(); i++) {
+                db.Execute(query, idNovoLivro);
+            }
+
+            ModelState.AddError("sucess", "Registro inserido com sucesso.");
+        }
+    }
+}
+
+<div id="novo-livro" class="page-content">
+    <h1 class="page-title">@Page.Title</h1>
+
+    <form action="#" method="post">
+        <fieldset style="border: 1px #fff solsid; box-shadow: 0 0 5px #322a2a; width: 390px;">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;">Dados do Livro</legend>
+
+                <div style="color: #f00">
+                    @Html.ValidationMessage("error")
+                </div>
+
+                <table>
+                    <tr>
+                        <td><label for="titulo" class="rotulo">Título:</label></td>
+                        <td><input type="text" name="titulo" class="campo" maxlength="100" required /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><label for="titulo" class="rotulo">Categoria:</label></td>
+                        <td>
+                            <select name="categoria" class="campo" required>                            
+                                <option value="0">Selecione uma categoria</option>
+                                @foreach(var c in categorias)
+                                {
+                                    <option value="@c.idCategoria">@c.nome</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="autor" class="rotulo">Autor:</label></td>
+                        <td><input type="text" name="autor" class="campo" maxlength="50" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="isbn" class="rotulo">ISBN:</label></td>
+                        <td><input type="number" name="isbn" class="campo" maxlength="13" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td><label for="qtdexemplares" class="rotulo">Qtd. Exemplares:</label></td>
+                        <td><input type="text" name="qtdexemplares" class="campo" required /></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="reset" value="Limpar" name="bntLimpar" class="botao" />
+                            <input type="submit" value="Salvar" name="bntSalvar" class="botao" />
+                        </td>
+                    </tr>
+
+                </table>
+        </fieldset>
+    </form>
+
+    <div style="color: #0026ff; font-size: 20px; font-family: Verdana, Arial, serif; margin: 30px 0 0 40px;">
+            @Html.ValidationMessage("sucess")
+    </div>
+</div>

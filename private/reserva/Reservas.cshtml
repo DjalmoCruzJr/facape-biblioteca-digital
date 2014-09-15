@@ -1,0 +1,112 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Reservas";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                "FROM reserva "+
+                "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                "ORDER BY reserva.dtreserva ASC";
+    var db = Database.Open("biblioteca");
+    var datas = db.Query(query);
+
+    var filtro = Request["pesquisa"];
+    var referencia = Request["referencia"];
+
+    if(filtro != null) {
+        if(filtro.Equals("idReserva")) {
+            query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM reserva "+
+                    "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE reserva.idReserva = @0 "+
+                    "ORDER BY reserva.dtreserva ASC";
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("numExemplar")) {
+            query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM reserva "+
+                    "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE reserva.numExemplar = @0 "+
+                    "ORDER BY reserva.dtreserva ASC"; 
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("titulo")) {
+            query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM reserva "+
+                    "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE livro.titulo LIKE @0 "+
+                    "ORDER BY reserva.dtreserva ASC"; 
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        } else if(filtro.Equals("idCliente")) {
+            query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM reserva "+
+                    "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE reserva.idCliente = @0 "+
+                    "ORDER BY reserva.dtreserva ASC"; 
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("nomeCliente")) {
+            query = "SELECT reserva.idReserva, reserva.dtreserva, reserva.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM reserva "+
+                    "INNER JOIN acervo ON reserva.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON reserva.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE cliente.nome LIKE @0 "+
+                    "ORDER BY reserva.dtreserva ASC"; 
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        } 
+    }
+
+    var dataGrid = new WebGrid(source: datas, rowsPerPage: 5);
+}
+
+<div id="reservas" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div id="pesquisar" style="float: left; margin-top: -20px; margin-bottom: 15px;">
+        <fieldset class="fieldset">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Pesquisar Por</legend>
+                <form action="#" method="post">
+                    <input type="radio" name="pesquisa" value="todos" checked />Todos
+                    <input type="radio" name="pesquisa" value="idReserva"/>Nº Reserva
+                    <input type="radio" name="pesquisa" value="numExemplar"/>Nº Exemplar
+                    <input type="radio" name="pesquisa" value="titulo"/>Título
+                    <input type="radio" name="pesquisa" value="idCliente"/>Cod. Cliente
+                    <input type="radio" name="pesquisa" value="nomeCliente"/>Nome do Cliente
+                    <input type="text" name="referencia" autofocus="true" />
+                    <input type="submit" name="bntPesquisar" value="Pesquisar"/>
+                </form>
+        </fieldset>
+    </div>
+
+      @{
+        if(datas.Count() > 0) {
+                @dataGrid.GetHtml(tableStyle: "grid", headerStyle: "head", alternatingRowStyle: "alt", 
+                        columns: dataGrid.Columns(
+                                dataGrid.Column("idReserva", "Nº Reserva"),
+                                dataGrid.Column("dtreserva", "Dt. Reserva"),
+                                dataGrid.Column("numExemplar", "Nº Exemplar"),
+                                dataGrid.Column("titulo", "Título do Exemplar"),
+                                dataGrid.Column("idCliente", "Cod. Cliente"),
+                                dataGrid.Column("nome", "Nome do Cliente"),     
+                                dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/reserva/EditarReserva/@item.idReserva"  class="crud-button">Editar</a></span></text>),                                                                                                    dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/reserva/ExcluirReserva/@item.idReserva"  class="crud-button">Excluir</a></span></text>)
+                        )
+                )
+        }
+    }
+
+    <div id="qtd-registros" style="clear: both;">Total de Registros Encontrados: @datas.Count()</div>
+    <br />
+
+</div>

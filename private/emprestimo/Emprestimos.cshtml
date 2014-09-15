@@ -1,0 +1,119 @@
+﻿@{
+    Layout = "~/private/layout/_LayoutPadrao.cshtml";
+    Page.Title = "Emprestimos";        
+
+    if(!WebSecurity.IsAuthenticated) {
+        Response.Redirect("~/");
+    }
+
+    var query = "SELECT emprestimo.idEmprestimo, emprestimo.dtEmprestimo, emprestimo.dtEntrega, emprestimo.dtDevolucao,"+
+                "emprestimo.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                "FROM emprestimo "+
+                "INNER JOIN acervo ON emprestimo.numExemplar = acervo.numExemplar "+
+                "INNER JOIN cliente ON emprestimo.idCliente = cliente.idCliente "+
+                "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                "ORDER BY emprestimo.dtEmprestimo ASC";
+    var db = Database.Open("biblioteca");
+    var datas = db.Query(query);
+    
+    var filtro = Request["pesquisa"];
+    var referencia = Request["referencia"];
+
+    if(filtro != null) {
+        if(filtro.Equals("idEmprestimo")) {
+            query = "SELECT emprestimo.idEmprestimo, emprestimo.dtEmprestimo, emprestimo.dtEntrega, emprestimo.dtDevolucao,"+
+                    "emprestimo.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM emprestimo "+
+                    "INNER JOIN acervo ON emprestimo.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON emprestimo.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE emprestimo.idEmprestimo = @0 "+
+                    "ORDER BY emprestimo.dtEmprestimo ASC";
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("numExemplar")) {
+            query = "SELECT emprestimo.idEmprestimo, emprestimo.dtEmprestimo, emprestimo.dtEntrega, emprestimo.dtDevolucao,"+
+                    "emprestimo.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM emprestimo "+
+                    "INNER JOIN acervo ON emprestimo.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON emprestimo.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE emprestimo.numExemplar = @0 "+
+                    "ORDER BY emprestimo.dtEmprestimo ASC"; 
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("titulo")) {
+            query = "SELECT emprestimo.idEmprestimo, emprestimo.dtEmprestimo, emprestimo.dtEntrega, emprestimo.dtDevolucao,"+
+                    "emprestimo.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM emprestimo "+
+                    "INNER JOIN acervo ON emprestimo.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON emprestimo.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE livro.titulo LIKE @0 "+
+                    "ORDER BY emprestimo.dtEmprestimo ASC";  
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        } else if(filtro.Equals("idCliente")) {
+            query = "SELECT emprestimo.idEmprestimo, emprestimo.dtEmprestimo, emprestimo.dtEntrega, emprestimo.dtDevolucao,"+
+                    "emprestimo.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM emprestimo "+
+                    "INNER JOIN acervo ON emprestimo.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON emprestimo.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE emprestimo.idCliente = @0 "+
+                    "ORDER BY emprestimo.dtEmprestimo ASC"; 
+            datas = db.Query(query, referencia.AsInt());
+        } else if(filtro.Equals("nomeCliente")) {
+            query = "SELECT emprestimo.idEmprestimo, emprestimo.dtEmprestimo, emprestimo.dtEntrega, emprestimo.dtDevolucao,"+
+                    "emprestimo.numExemplar, livro.titulo, cliente.idCliente, cliente.nome "+
+                    "FROM emprestimo "+
+                    "INNER JOIN acervo ON emprestimo.numExemplar = acervo.numExemplar "+
+                    "INNER JOIN cliente ON emprestimo.idCliente = cliente.idCliente "+
+                    "INNER JOIN livro ON acervo.idLivro = livro.idLivro "+
+                    "WHERE cliente.nome LIKE @0 "+
+                    "ORDER BY emprestimo.dtEmprestimo ASC"; 
+            datas = db.Query(query, referencia.ToString().Trim().ToUpper()+"%");
+        }
+    }
+
+    var dataGrid = new WebGrid(source: datas, rowsPerPage: 5);
+}
+
+<div id="emprestimos" class="page-content">
+
+    <h1 class="page-title">@Page.Title</h1>
+
+    <div id="pesquisar" style="float: left; margin-top: -20px; margin-bottom: 15px;">
+        <fieldset class="fieldset">
+            <legend style="font-family: Verdana, Arial, serif; font-weight: bold;"  >Pesquisar Por</legend>
+                <form action="#" method="post">
+                    <input type="radio" name="pesquisa" value="todos" checked />Todos
+                    <input type="radio" name="pesquisa" value="idEmprestimo"/>Nº Emprestimo
+                    <input type="radio" name="pesquisa" value="numExemplar"/>Nº Exemplar
+                    <input type="radio" name="pesquisa" value="titulo"/>Título
+                    <input type="radio" name="pesquisa" value="idCliente"/>Cod. Cliente
+                    <input type="radio" name="pesquisa" value="nomeCliente"/>Nome do Cliente
+                    <input type="text" name="referencia" autofocus="true" />
+                    <input type="submit" name="bntPesquisar" value="Pesquisar"/>
+                </form>
+        </fieldset>
+    </div>
+
+    @{
+        if(datas.Count() > 0) {
+                @dataGrid.GetHtml(tableStyle: "grid", headerStyle: "head", alternatingRowStyle: "alt", 
+                        columns: dataGrid.Columns(
+                                dataGrid.Column("idEmprestimo", "Nº Emprestimo"),
+                                dataGrid.Column("dtEmprestimo", "Dt. Emprestimo"),
+                                dataGrid.Column("dtEntrega", "Dt. Entrega"),
+                                dataGrid.Column("numExemplar", "Nº Exemplar"),
+                                dataGrid.Column("titulo", "Título do Exemplar"),
+                                dataGrid.Column("idCliente", "Cod. Cliente"),
+                                dataGrid.Column("nome", "Nome do Cliente"),
+                                dataGrid.Column("dtDevolucao", "Dt. Devolução"),                                                                                                  dataGrid.Column(null, null, format: @<text><span class="crud-button"><a href="~/private/emprestimo/DevolverExemplar/@item.idEmprestimo"  class="crud-button">Devolver</a></span></text>)
+                        )
+                )
+        }
+    }
+
+    <div id="qtd-registros" style="clear: both;">Total de Registros Encontrados: @datas.Count()</div>
+    <br />
+
+</div>
