@@ -4,8 +4,6 @@ Sistema de biblioteca feita em ASP .Net Razor - Projeto da disciplina de Tecnolo
 
 <hr />
 
-<h2>Objetivos do Projeto</h2>
-
 <h2>Descrição do Projeto</h2>
 
 <p>
@@ -15,16 +13,30 @@ O sistema foi desenvolvido utilizando algumas tecnologias Microsoft, como a IDE 
 banco de dados SQL Server.
 </p>
 
+<h2>Objetivos do Projeto</h2>
+
+<p>Este projeto tem como objetivos básicos disponibilizar os seguintes serviços:</p>
+
+<ul>
+<li>CRUD de Usuários;</li>
+<li>CRUD de Categorias de Livros;</li>
+<li>CRUD de Livros;</li>
+<li>CRUD de Clientes;</li>
+<li>CRUD de Exemplares;</li>
+<li>Controle de Reservas;</li>
+<li>Controle de Empréstimos;</li>
+<li>Controle de Devluções;</li>
+<ul>
+
 <h2>Equipe</h2>
 
 <ul>
-  <li>Ana Caroline;</li>
-  <li>Claudio Henrique;</li>
-  <li><em>Djalmo Cruz</em>;</li>
-  <li>Josimar;</li>
-  <li>Luiz Mário;</li>
+<li>Ana Caroline;</li>
+<li>Claudio Henrique;</li>
+<li><b>Djalmo Cruz</b>;</li>
+<li>Josimar;</li>
+<li>Luiz Mário;</li>
 <ul>
-
 
 <h2>Contatos</h2>
 
