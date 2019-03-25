@@ -17,7 +17,7 @@ Este projeto foi desenvolvido como parte da avaliação para obtenção da nota 
 <li>Controle de Reservas;</li>
 <li>Controle de Empréstimos;</li>
 <li>Controle de Devluções;</li>
-<ul>
+</ul>
 
 <h1>Tecnologias Utilizadas</h1>
 <ul>
