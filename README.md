@@ -30,7 +30,7 @@ Este projeto foi desenvolvido como parte da avaliação para obtenção da nota 
 <ul>
 <li>Ana Caroline;</li>
 <li>Claudio Henrique;</li>
-<li><b>Djalmo Cruz</b>;</li>
+<li>Djalmo Cruz;</li>
 <li>Josimar;</li>
 <li>Luiz Mário;</li>
 </ul>
